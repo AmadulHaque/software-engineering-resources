@@ -2,7 +2,8 @@
 
 // SOLID Principles - Liskov Substitution Principle (LSP)
 // Definition: Objects of a superclass should be replaceable with objects of a subclass without affecting the correctness of the program.
-//
+
+// subclasses can replace superclasses without affecting the program's correctness
 // The principle ensures that subclasses behave in a way that does not break the expectations set by the base class.
 // If a class is extended, the derived class should be usable without modifying existing functionality or introducing unexpected behaviors.
 //
@@ -14,7 +15,7 @@
 // - History Constraint: A subclass should not modify the historical behavior of the base class by introducing unexpected changes.
 //
 // Allowable Adjustments:
-// - Contravariance: A subclass can accept broader input types than its parent class.
+// - Contravariant: A subclass can accept broader input types than its parent class.
 // - Covariance: A subclass can return a more specific (narrower) type than its parent class.
 
 // Example: Violation of LSP
