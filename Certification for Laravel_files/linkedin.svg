@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="app-icons_SVG_Frame_Clip_Content_Mask_" data-name="app-icons → SVG [Frame Clip Content Mask]" width="24" height="24" fill="none"/>
+    </clipPath>
+  </defs>
+  <g id="span.cursor-pointer:margin" transform="translate(-8)">
+    <g id="app-icons_SVG_Clip_Content_" data-name="app-icons → SVG (Clip Content)" transform="translate(8)" clip-path="url(#clip-path)">
+      <g id="Group_293" data-name="Group 293" transform="translate(-0.002 0.519)">
+        <path id="linkedin" d="M.3,22.952V7.473H5.45V22.952ZM2.844,5.357A2.681,2.681,0,1,1,2.911.01a2.682,2.682,0,1,1-.033,5.347ZM8.3,22.952s.067-14.026,0-15.479h5.143V9.717h-.034A5.123,5.123,0,0,1,18.078,7.1C21.463,7.1,24,9.322,24,14.076v8.873H18.857V14.668c0-2.081-.745-3.5-2.607-3.5a2.816,2.816,0,0,0-2.64,1.882,3.521,3.521,0,0,0-.169,1.257v8.645H8.3Z" transform="translate(0 0)" fill="#1e1a1c"/>
+      </g>
+    </g>
+  </g>
+</svg>
