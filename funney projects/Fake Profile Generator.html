@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Profile Generator</title>
+    <style>
+        body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.profile-card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin: 10px 0;
+}
+
+p {
+    color: #666;
+    font-size: 1em;
+}
+
+#posts {
+    margin-top: 20px;
+}
+
+.post {
+    background-color: #f0f0f0;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+.generate-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 1em;
+}
+
+.generate-button:hover {
+    background-color: #45a049;
+}
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="profile-card">
+            <img id="profile-avatar" src="" alt="Avatar" class="profile-avatar">
+            <h2 id="profile-name">John Doe</h2>
+            <p id="profile-bio">Just another human trying to survive Monday.</p>
+            <div id="posts">
+                <div class="post">Just saw a squirrel trying to do parkour.</div>
+                <div class="post">The coffee machine is broken. I might never recover.</div>
+            </div>
+            <button id="generate-profile" class="generate-button">Generate New Profile</button>
+        </div>
+    </div>
+
+    <script>
+        // Fake data arrays
+const names = ["John Doe", "Jane Smith", "Billy Bob", "Samantha Fox", "Charlie Brown", "Olivia Pope"];
+const bios = [
+    "Just another human trying to survive Monday.",
+    "Trying to figure out how to adult.",
+    "Life's too short to take seriously.",
+    "Aspiring potato enthusiast.",
+    "Fluent in sarcasm.",
+    "Caffeine is my spirit animal."
+];
+const posts = [
+    "Just saw a squirrel trying to do parkour.",
+    "The coffee machine is broken. I might never recover.",
+    "Why do the Wi-Fi signals always disappear at the worst time?",
+    "If I could be any animal, I'd be a sloth.",
+    "Trying to become a morning person. It's not going well.",
+    "Bought a plant. Let's see if I can keep it alive this time."
+];
+const avatars = [
+    "https://i.pinimg.com/originals/6e/8d/30/6e8d30e6507fbc9f484bbf98f89980cc.png",
+    "https://i.pinimg.com/originals/2a/53/38/2a5338991db30b746b63d8f89d95a315.png",
+    "https://i.pinimg.com/originals/ea/7d/91/ea7d91da57163be3cc2de73104164d2a.png",
+    "https://i.pinimg.com/originals/f7/ea/5e/f7ea5e0885a42b5cc4747bb63cd0c17b.png",
+    "https://i.pinimg.com/originals/7c/91/96/7c91961779b16c5d0ba80a6399b3c5ad.png"
+];
+
+// Function to generate random profile
+function generateRandomProfile() {
+    const randomName = names[Math.floor(Math.random() * names.length)];
+    const randomBio = bios[Math.floor(Math.random() * bios.length)];
+    const randomPosts = [];
+    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+
+    // Get 2 random posts
+    for (let i = 0; i < 2; i++) {
+        const randomPost = posts[Math.floor(Math.random() * posts.length)];
+        randomPosts.push(randomPost);
+    }
+
+    // Update profile with random values
+    document.getElementById("profile-name").textContent = randomName;
+    document.getElementById("profile-bio").textContent = randomBio;
+    document.getElementById("profile-avatar").src = randomAvatar;
+    document.getElementById("profile-avatar").alt = `${randomName}'s Avatar`;
+
+    const postsContainer = document.getElementById("posts");
+    postsContainer.innerHTML = ''; // Clear current posts
+    randomPosts.forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.classList.add('post');
+        postElement.textContent = post;
+        postsContainer.appendChild(postElement);
+    });
+}
+
+// Initial profile load
+generateRandomProfile();
+
+// Event listener for button to generate a new profile
+document.getElementById("generate-profile").addEventListener("click", generateRandomProfile);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Infinite Fractal Zoom</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        .ui { position: absolute; top: 10px; left: 10px; color: white; }
+        .controls { position: absolute; bottom: 10px; left: 10px; }
+    </style>
+</head>
+<body>
+    <canvas id="fractalCanvas"></canvas>
+    <div class="ui">
+        <div>Coordinates: <span id="coords">0, 0</span></div>
+        <div>Zoom: <span id="zoom">1x</span></div>
+    </div>
+    <div class="controls">
+        <button id="reset">Reset View</button>
+        <select id="colorScheme">
+            <option value="rainbow">Rainbow</option>
+            <option value="fire">Fire</option>
+            <option value="grayscale">Grayscale</option>
+        </select>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Mood Mirror 😆</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Custom animations */
+        .meme-pop {
+            animation: pop 0.3s ease-out;
+        }
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        #video {
+            transform: scaleX(-1); /* Mirror effect */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-100 to-blue-200 min-h-screen">
+    <div class="container mx-auto px-4 py-8 text-center">
+        <h1 class="text-4xl font-bold mb-2">Meme Mood Mirror</h1>
+        <p class="text-xl mb-8">Show your face or pick a mood to get your perfect meme!</p>
+        
+        <!-- Webcam Section -->
+        <div class="bg-white rounded-xl shadow-lg p-4 mb-8 mx-auto max-w-md">
+            <div class="relative">
+                <video id="video" width="400" height="300" autoplay muted 
+                    class="rounded-lg border-2 border-gray-200"></video>
+                <canvas id="canvas" class="absolute top-0 left-0"></canvas>
+            </div>
+            <p id="mood-status" class="mt-2 font-semibold">Detecting mood...</p>
+            <button id="start-cam" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                Start Camera
+            </button>
+        </div>
+        
+        <!-- Emoji Fallback -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 mx-auto max-w-md">
+            <h2 class="text-2xl font-bold mb-4">Or select your mood:</h2>
+            <div id="emoji-selector" class="flex justify-center flex-wrap"></div>
+        </div>
+        
+        <!-- Meme Display -->
+        <div id="meme-container" class="bg-white rounded-xl shadow-lg p-4 mb-8 mx-auto max-w-md pulse hidden">
+            <!-- Meme will appear here -->
+        </div>
+        
+        <!-- Action Buttons -->
+        <div id="action-buttons" class="hidden">
+            <button id="download-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg mr-4">
+                Download Meme
+            </button>
+            <button id="new-meme-btn" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg">
+                Get New Meme
+            </button>
+        </div>
+    </div>
+
+    <!-- Audio Element for Sounds -->
+    <audio id="sound-effect" preload="auto"></audio>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script>
+        // Current mood tracking
+        let currentMood = null;
+        let currentMeme = null;
+        
+        // Meme database
+        const memeDatabase = {
+            happy: [
+                { image: 'https://i.imgflip.com/4/1bij.jpg', sound: 'https://www.soundjay.com/human/sounds/applause-01.mp3', caption: 'When the code works on first try' },
+                { image: 'https://i.imgflip.com/4/1bgw.jpg', sound: 'https://www.soundjay.com/human/sounds/applause-02.mp3', caption: 'Friday mood' }
+            ],
+            sad: [
+                { image: 'https://i.imgflip.com/4/1ihzfe.jpg', sound: 'https://www.soundjay.com/human/sounds/sad-trombone-01.mp3', caption: 'When you delete code and realize you needed it' },
+                { image: 'https://i.imgflip.com/4/1ihzfe.jpg', sound: 'https://www.soundjay.com/mechanical/sounds/camera-shutter-click-01.mp3', caption: 'Me waiting for my code to compile' }
+            ],
+            angry: [
+                { image: 'https://i.imgflip.com/4/1bip.jpg', sound: 'https://www.soundjay.com/mechanical/sounds/explosion-01.mp3', caption: 'When someone says "just copy from StackOverflow"' },
+                { image: 'https://i.imgflip.com/4/1bgw.jpg', sound: 'https://www.soundjay.com/mechanical/sounds/explosion-02.mp3', caption: 'Seeing spaghetti code in production' }
+            ],
+            surprised: [
+                { image: 'https://i.imgflip.com/4/1bh8.jpg', sound: 'https://www.soundjay.com/mechanical/sounds/magic-chime-01.mp3', caption: 'When your hack actually works' },
+                { image: 'https://i.imgflip.com/4/1bh3.jpg', sound: 'https://www.soundjay.com/mechanical/sounds/magic-chime-02.mp3', caption: 'When JavaScript does type coercion correctly' }
+            ],
+            disgusted: [
+                { image: 'https://i.imgflip.com/4/1bhf.jpg', sound: 'https://www.soundjay.com/human/sounds/gagging-01.mp3', caption: 'When you see "var" in 2023 code' }
+            ],
+            fearful: [
+                { image: 'https://i.imgflip.com/4/1bhm.jpg', sound: 'https://www.soundjay.com/human/sounds/scream-01.mp3', caption: 'When you accidentally git push --force' }
+            ],
+            neutral: [
+                { image: 'https://i.imgflip.com/4/1bhw.jpg', sound: 'https://www.soundjay.com/buttons/sounds/button-09.mp3', caption: 'Me pretending I understand the meeting' }
+            ]
+        };
+
+        // Mood emojis for fallback
+        const moodEmojis = {
+            happy: '😄',
+            sad: '😢',
+            angry: '😠',
+            surprised: '😲',
+            disgusted: '🤢',
+            fearful: '😨',
+            neutral: '😐'
+        };
+
+        // DOM elements
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const moodStatus = document.getElementById('mood-status');
+        const memeContainer = document.getElementById('meme-container');
+        const actionButtons = document.getElementById('action-buttons');
+        const soundEffect = document.getElementById('sound-effect');
+        const startCamBtn = document.getElementById('start-cam');
+        const downloadBtn = document.getElementById('download-btn');
+        const newMemeBtn = document.getElementById('new-meme-btn');
+        const emojiSelector = document.getElementById('emoji-selector');
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEmojiSelector();
+            setupEventListeners();
+            
+            // Try to load face-api models
+            loadModels().catch(err => {
+                console.log("Face detection not available:", err);
+                moodStatus.textContent = "Face detection not available - please select your mood below";
+            });
+        });
+
+        // Set up emoji selector buttons
+        function setupEmojiSelector() {
+            Object.entries(moodEmojis).forEach(([mood, emoji]) => {
+                const btn = document.createElement('button');
+                btn.textContent = emoji;
+                btn.className = 'text-4xl mx-2 hover:scale-125 transition-transform';
+                btn.onclick = () => {
+                    currentMood = mood;
+                    showMatchingMeme(mood);
+                };
+                emojiSelector.appendChild(btn);
+            });
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            startCamBtn.addEventListener('click', startCamera);
+            downloadBtn.addEventListener('click', downloadMeme);
+            newMemeBtn.addEventListener('click', () => showMatchingMeme(currentMood));
+        }
+
+        // Load face-api models
+        async function loadModels() {
+            try {
+                await faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+                await faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+                await faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+                await faceapi.nets.faceExpressionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models');
+                moodStatus.textContent = "Models loaded - click Start Camera";
+            } catch (error) {
+                console.error("Error loading models:", error);
+                moodStatus.textContent = "Face detection not available - please select your mood below";
+            }
+        }
+
+        // Start webcam
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                startCamBtn.classList.add('hidden');
+                moodStatus.textContent = "Detecting your mood...";
+                detectExpressions();
+            } catch (err) {
+                console.error("Camera error:", err);
+                moodStatus.textContent = "Camera not available - please select your mood below";
+            }
+        }
+
+        // Detect facial expressions
+        async function detectExpressions() {
+            const displaySize = { width: video.width, height: video.height };
+            faceapi.matchDimensions(canvas, displaySize);
+            
+            setInterval(async () => {
+                const detections = await faceapi.detectAllFaces(video, 
+                    new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks()
+                    .withFaceExpressions();
+                
+                if (detections.length > 0) {
+                    const expressions = detections[0].expressions;
+                    const dominantExpression = Object.entries(expressions)
+                        .reduce((a, b) => a[1] > b[1] ? a : b)[0];
+                    
+                    moodStatus.textContent = `You look ${dominantExpression}!`;
+                    
+                    if (currentMood !== dominantExpression) {
+                        currentMood = dominantExpression;
+                        showMatchingMeme(dominantExpression);
+                    }
+                }
+                
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                faceapi.draw.drawDetections(canvas, resizedDetections);
+                faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+                faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
+            }, 500);
+        }
+
+        // Show matching meme
+        function showMatchingMeme(mood) {
+            const meme = getRandomMeme(mood);
+            currentMeme = meme;
+            
+            // Play sound
+            soundEffect.src = meme.sound;
+            soundEffect.play();
+            
+            // Create meme element
+            memeContainer.innerHTML = `
+                <div class="meme-pop bg-white rounded-lg shadow-xl overflow-hidden">
+                    <img src="${meme.image}" class="w-full" crossorigin="anonymous">
+                    <div class="p-4 text-center font-bold text-lg">
+                        ${meme.caption}
+                    </div>
+                </div>
+            `;
+            
+            // Show container and buttons
+            memeContainer.classList.remove('hidden');
+            actionButtons.classList.remove('hidden');
+            
+            // Add animation
+            gsap.from(".meme-pop", {
+                y: 50,
+                duration: 0.5,
+                ease: "back.out(1.7)"
+            });
+        }
+
+        // Get random meme for mood
+        function getRandomMeme(mood) {
+            const memes = memeDatabase[mood] || memeDatabase.happy;
+            return memes[Math.floor(Math.random() * memes.length)];
+        }
+
+        // Download meme
+        function downloadMeme() {
+            html2canvas(memeContainer).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'meme-mood-mirror.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
