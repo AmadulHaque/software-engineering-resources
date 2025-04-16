@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browser-Based Code Editor</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+    }
+    #app {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+    #file-tree {
+      width: 200px;
+      background-color: #f4f4f4;
+      border-right: 1px solid #ddd;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    #editor-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    #editor {
+      flex: 1;
+      border-bottom: 1px solid #ddd;
+    }
+    #preview {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background-color: #fafafa;
+    }
+    .file-item {
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 3px;
+    }
+    .file-item:hover {
+      background-color: #e0e0e0;
+    }
+    .folder {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- File Tree -->
+    <div id="file-tree">
+      <div class="folder">Files</div>
+      <div class="file-item" data-file="file1.md">file1.md</div>
+      <div class="file-item" data-file="file2.js">file2.js</div>
+    </div>
+
+    <!-- Editor and Preview -->
+    <div id="editor-container">
+      <div id="editor"></div>
+      <div id="preview"></div>
+    </div>
+  </div>
+
+  <!-- Load Monaco Editor -->
+  <script src="https://unpkg.com/monaco-editor@0.43.0/min/vs/loader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+  <script>
+    // JavaScript Code
+    const fileContent = {
+      "file1.md": "# Hello, World!\n\nThis is a **Markdown** file.",
+      "file2.js": "console.log('Hello, World!');"
+    };
+
+    let currentFile = null;
+
+    // Initialize Monaco Editor
+    require.config({ paths: { vs: "https://unpkg.com/monaco-editor@0.43.0/min/vs" } });
+    require(["vs/editor/editor.main"], function () {
+      const editor = monaco.editor.create(document.getElementById("editor"), {
+        value: "",
+        language: "plaintext",
+        theme: "vs-dark",
+        automaticLayout: true,
+      });
+
+      // Update editor content when a file is selected
+      document.querySelectorAll(".file-item").forEach((item) => {
+        item.addEventListener("click", () => {
+          const fileName = item.getAttribute("data-file");
+          currentFile = fileName;
+          editor.setValue(fileContent[fileName] || "");
+          updateLanguage(fileName);
+          updatePreview(fileName);
+        });
+      });
+
+      // Update language based on file extension
+      function updateLanguage(fileName) {
+        const ext = fileName.split(".").pop();
+        const languageMap = { js: "javascript", md: "markdown" };
+        const language = languageMap[ext] || "plaintext";
+        monaco.editor.setModelLanguage(editor.getModel(), language);
+      }
+
+      // Update preview for Markdown files
+      function updatePreview(fileName) {
+        const preview = document.getElementById("preview");
+        if (fileName.endsWith(".md")) {
+          const md = window.markdownit();
+          preview.innerHTML = md.render(editor.getValue());
+        } else {
+          preview.innerHTML = "<p>Select a Markdown file to preview.</p>";
+        }
+      }
+
+      // Live Markdown Preview
+      editor.onDidChangeModelContent(() => {
+        if (currentFile && currentFile.endsWith(".md")) {
+          const md = window.markdownit();
+          document.getElementById("preview").innerHTML = md.render(editor.getValue());
+        }
+      });
+    });
+  </script>
+</body>
+</html>

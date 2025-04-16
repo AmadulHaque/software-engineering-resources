@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cross-Tab Guided Tour</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .step-box {
+      border: 2px solid #4CAF50;
+      padding: 1rem;
+      margin: 1rem 0;
+      display: none;
+    }
+    .active { display: block; }
+    button { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Product Tour</h1>
+  <p>This tab will participate in the guided tour steps.</p>
+
+  <div id="step1" class="step-box">Step 1: Welcome to the app!</div>
+  <div id="step2" class="step-box">Step 2: Here's your dashboard.</div>
+  <div id="step3" class="step-box">Step 3: Customize your settings.</div>
+  <div id="step4" class="step-box">Step 4: You're ready to go!</div>
+
+  <button id="next">Next Step</button>
+  <button id="reset">Reset Tour</button>
+
+  <script>
+    const channel = new BroadcastChannel("tour");
+    let currentStep = 0;
+    let stepOwner = false;
+
+    const steps = [
+      document.getElementById("step1"),
+      document.getElementById("step2"),
+      document.getElementById("step3"),
+      document.getElementById("step4")
+    ];
+
+    function showStep(step) {
+      steps.forEach((el, index) => {
+        el.classList.toggle("active", index === step);
+      });
+    }
+
+    function resetTour() {
+      currentStep = 0;
+      stepOwner = true;
+      showStep(currentStep);
+      channel.postMessage({ type: "step", step: currentStep });
+    }
+
+    function nextStep() {
+      if (!stepOwner) return alert("Another tab is leading this step.");
+      currentStep++;
+      if (currentStep < steps.length) {
+        showStep(currentStep);
+        channel.postMessage({ type: "step", step: currentStep });
+      } else {
+        alert("Tour complete!");
+        channel.postMessage({ type: "end" });
+        steps.forEach(s => s.classList.remove("active"));
+      }
+    }
+
+    channel.onmessage = (e) => {
+      const data = e.data;
+      if (data.type === "step") {
+        stepOwner = false;
+        currentStep = data.step;
+        showStep(currentStep);
+      } else if (data.type === "end") {
+        stepOwner = false;
+        steps.forEach(s => s.classList.remove("active"));
+      }
+    };
+
+    // Start the tour in first opened tab
+    if (performance.getEntriesByType("navigation")[0].type === "navigate") {
+      // First tab owns the tour
+      stepOwner = true;
+      showStep(currentStep);
+      channel.postMessage({ type: "step", step: currentStep });
+    }
+
+    document.getElementById("next").onclick = nextStep;
+    document.getElementById("reset").onclick = resetTour;
+  </script>
+</body>
+</html>
